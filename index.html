@@ -3,11 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="./js/main.js" defer></script>
-    <title>mi primer interaccion </title>
+    <title>Gestión de Socios - Club / Gimnasio</title>
+    <link rel="stylesheet" href="css/estilos.css">
 </head>
 <body>
-     <h1>Introcuccion a JavaScript</h1>
-    <p></p>
+
+    <h1>🏋️‍♂️ Sistema de Gestión de Socios</h1>
+
+    <div class="grid-container">
+        
+        <div class="card-panel">
+            <h2>Registrar Nuevo Socio</h2>
+            <div id="form-socio">
+                <input type="text" id="reg-nombre" placeholder="Nombre completo" required>
+                <input type="number" id="reg-edad" placeholder="Edad" min="1" required>
+                <select id="reg-categoria" required>
+                    <option value="" disabled selected>Seleccione una Categoría</option>
+                    <option value="Musculación">Musculación</option>
+                    <option value="Pase Libre">Pase Libre</option>
+                    <option value="Crossfit">Crossfit</option>
+                    <option value="VIP Premium">VIP Premium</option>
+                </select>
+                <input type="number" id="reg-cuota" placeholder="Cuota Base ($)" min="0" required>
+                <button type="button" id="btn-registrar">Agregar Socio al Padrón</button>
+            </div>
+        </div>
+
+       
+        <div class="card-panel">
+            <h2>Controles y Filtros</h2>
+            <label for="filtro-categoria"><strong>Filtrar por Categoría en tiempo real:</strong></label>
+            <select id="filtro-categoria" class="search-bar">
+                <option value="Todos">Mostrar Todos</option>
+                <option value="Musculación">Musculación</option>
+                <option value="Pase Libre">Pase Libre</option>
+                <option value="Crossfit">Crossfit</option>
+                <option value="VIP Premium">VIP Premium</option>
+            </select>
+            
+            <div class="total-panel">
+                Ingresos Totales Esperados: <span id="ingresos-totales">$0</span>
+            </div>
+        </div>
+    </div>
+
+   
+    <div id="notificacion" class="feedback oculto"></div>
+
+    
+    <div class="card-panel">
+        <h2>Padrón de Socios Activos</h2>
+        <div id="contenedor-socios"></div>
+    </div>
+
+    <script src="js/main.js"></script>
 </body>
 </html>

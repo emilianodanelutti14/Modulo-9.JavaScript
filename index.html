@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Socios - Club / Gimnasio</title>
-    <link rel="stylesheet" href="css/estilos.css">
+    <link rel="stylesheet" href="css/style.css">
+     <script src="js/main.js" defer></script>
 </head>
 <body>
 
@@ -24,7 +25,7 @@
                     <option value="Crossfit">Crossfit</option>
                     <option value="VIP Premium">VIP Premium</option>
                 </select>
-                <input type="number" id="reg-cuota" placeholder="Cuota Base ($)" min="0" required>
+                <input type="number" id="reg-cuota" placeholder="Cuota Base ($)" min="0" disabled required>
                 <button type="button" id="btn-registrar">Agregar Socio al Padrón</button>
             </div>
         </div>
@@ -55,7 +56,5 @@
         <h2>Padrón de Socios Activos</h2>
         <div id="contenedor-socios"></div>
     </div>
-
-    <script src="js/main.js"></script>
 </body>
 </html>

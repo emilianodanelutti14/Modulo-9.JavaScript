@@ -32,15 +32,21 @@ h1, h2 {
 /* ==========================================
    ELEMENTOS DE FORMULARIO E INPUTS
    ========================================== */
-form input, 
-form select, 
+#form-socio input, 
+#form-socio select, 
 .search-bar { 
     width: 100%; 
     padding: 10px; 
     margin: 8px 0; 
     border: 1px solid #ccc; 
-    border-radius: 4px; 
     box-sizing: border-box; 
+    font-family: inherit; 
+}
+#form-socio input:disabled {
+    background-color: #eaeded;
+    color: #7f8c8d;
+    cursor: not-allowed;
+    border: 1px solid #d5dbdb;
 }
 
 /* ==========================================

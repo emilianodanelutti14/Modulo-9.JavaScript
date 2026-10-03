@@ -5,6 +5,7 @@ class Socio {
         } else {
             this.id = "socio_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
         }
+        
         this.nombre = nombre;
         this.edad = parseInt(edad);
         this.categoria = categoria; 
@@ -18,19 +19,7 @@ class Socio {
     }
 }
 
-const sociosGuardados = JSON.parse(localStorage.getItem("padronSocios"));
-
-let padronSocios = sociosGuardados 
-    ? sociosGuardados.map(s => new Socio(s.nombre, s.edad, s.categoria, s.cuotaBase, s.id))
-    : [
-        new Socio("Gonzalo Pérez", 28, "Musculación", 15000),
-        new Socio("Martina Gómez", 34, "Pase Libre", 22000),
-        new Socio("Ariel Rodríguez", 19, "Crossfit", 18000)
-      ];
-
-function guardarEnLocalStorage() {
-    localStorage.setItem("padronSocios", JSON.stringify(padronSocios));
-}
+let padronSocios = [];
 
 const contenedorSocios = document.querySelector("#contenedor-socios");
 const filtroCategoria = document.querySelector("#filtro-categoria");
@@ -41,12 +30,44 @@ const inputNombre = document.querySelector("#reg-nombre");
 const inputEdad = document.querySelector("#reg-edad");
 const inputCategoria = document.querySelector("#reg-categoria");
 const inputCuota = document.querySelector("#reg-cuota");
+
 const preciosPorCategoria = {
     "Musculación": 15000,
     "Pase Libre": 22000,
     "Crossfit": 18000,
     "VIP Premium": 30000
 };
+
+function cargarDatosIniciales() {
+    try {
+        const sociosGuardados = JSON.parse(localStorage.getItem("padronSocios"));
+        if (sociosGuardados) {
+            padronSocios = sociosGuardados.map(s => new Socio(s.nombre, s.edad, s.categoria, s.cuotaBase, s.id));
+        } else {
+            throw new Error("No hay datos almacenados en LocalStorage.");
+        }
+    } catch (error) {
+        console.warn("Aviso de carga:", error.message);
+        
+        padronSocios = [
+            new Socio("Gonzalo Pérez", 28, "Musculación", 15000),
+            new Socio("Martina Gómez", 34, "Pase Libre", 22000),
+            new Socio("Ariel Rodríguez", 19, "Crossfit", 18000)
+        ];
+    } finally {
+       
+        renderizarSocios(padronSocios);
+    }
+}
+
+setTimeout(() => {
+    lanzarFeedback("📢 Recordatorio del día: Las cuotas vencen el día 10 de cada mes.","alerta");
+}, 4000);
+
+function guardarEnLocalStorage() {
+    localStorage.setItem("padronSocios", JSON.stringify(padronSocios));
+}
+
 inputCategoria.addEventListener("change", function() {
     const precio = preciosPorCategoria[inputCategoria.value];
     inputCuota.value = precio ? precio : "";
@@ -86,6 +107,7 @@ function renderizarSocios(listaDeSocios) {
     });
     calcularIngresosTotales();
 }
+
 function lanzarFeedback(mensaje, tipoClase) {
     notificacion.innerHTML = `
         <span>${mensaje}</span>
@@ -114,7 +136,6 @@ btnRegistrar.addEventListener("click", function() {
     );
 
     padronSocios.push(nuevoSocio);
-    
     guardarEnLocalStorage(); 
     
     lanzarFeedback(`¡Socio ${nuevoSocio.nombre} registrado con éxito!`, "exito");
@@ -142,16 +163,13 @@ function aplicarFiltroActual() {
 }
 
 contenedorSocios.addEventListener("click", function(event) {
-    
     if (event.target.classList.contains("btn-recargo")) {
         const idBuscar = event.target.getAttribute("data-id");
         const socioAFectar = padronSocios.find(s => s.id === idBuscar);
         
         if (socioAFectar) {
             socioAFectar.calcularCuotaConRecargo();
-            
             guardarEnLocalStorage(); 
-            
             lanzarFeedback(`Se aplicó 10% de recargo por mora a ${socioAFectar.nombre}`, "alerta");
             aplicarFiltroActual();
         }
@@ -164,13 +182,11 @@ contenedorSocios.addEventListener("click", function(event) {
         if (indexOriginal !== -1) {
             const socioBaja = padronSocios[indexOriginal];
             padronSocios.splice(indexOriginal, 1); 
-            
             guardarEnLocalStorage(); 
-            
             lanzarFeedback(`Socio ${socioBaja.nombre} dado de baja de la institución`, "alerta");
             aplicarFiltroActual(); 
         }
     }
 });
 
-renderizarSocios(padronSocios);
+cargarDatosIniciales();

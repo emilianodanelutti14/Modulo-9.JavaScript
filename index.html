@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Socios - Club / Gimnasio</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
      <script src="js/main.js" defer></script>
 </head>
 <body>
@@ -45,10 +47,13 @@
             <div class="total-panel">
                 Ingresos Totales Esperados: <span id="ingresos-totales">$0</span>
             </div>
+            <button type="button" id="btn-vaciar" style="background-color: #e74c3c; margin-top: 15px;">
+             ⚠️ Vaciar Todo el Padrón
+            </button>
         </div>
     </div>
 
-   
+    <div id="estado-conexion" style="text-align: center; margin: 15px 0; font-weight: bold; color: #2c3e50;"></div>
     <div id="notificacion" class="feedback oculto"></div>
 
     

@@ -23,8 +23,8 @@ let padronSocios = [];
 
 const contenedorSocios = document.querySelector("#contenedor-socios");
 const filtroCategoria = document.querySelector("#filtro-categoria");
-const notificacion = document.querySelector("#notificacion");
 const txtIngresosTotales = document.querySelector("#ingresos-totales");
+const estadoConexion = document.querySelector("#estado-conexion");
 
 const inputNombre = document.querySelector("#reg-nombre");
 const inputEdad = document.querySelector("#reg-edad");
@@ -38,31 +38,46 @@ const preciosPorCategoria = {
     "VIP Premium": 30000
 };
 
-function cargarDatosIniciales() {
+async function cargarDatosIniciales() {
+    estadoConexion.innerHTML = "⏳ Cargando padrón de socios desde el servidor...";
+
     try {
         const sociosGuardados = JSON.parse(localStorage.getItem("padronSocios"));
+        
         if (sociosGuardados) {
             padronSocios = sociosGuardados.map(s => new Socio(s.nombre, s.edad, s.categoria, s.cuotaBase, s.id));
         } else {
-            throw new Error("No hay datos almacenados en LocalStorage.");
+            const respuesta = await fetch("./js/socios_iniciales.json");
+            
+            if (!respuesta.ok) {
+                throw new Error(`Error de red: Código de estado ${respuesta.status}`);
+            }
+
+            const datosJson = await respuesta.json();
+            padronSocios = datosJson.map(s => new Socio(s.nombre, s.edad, s.categoria, s.cuotaBase));
+            guardarEnLocalStorage();
         }
+        estadoConexion.innerHTML = "";
+
     } catch (error) {
-        console.warn("Aviso de carga:", error.message);
-        
-        padronSocios = [
-            new Socio("Gonzalo Pérez", 28, "Musculación", 15000),
-            new Socio("Martina Gómez", 34, "Pase Libre", 22000),
-            new Socio("Ariel Rodríguez", 19, "Crossfit", 18000)
-        ];
+        console.error("Fallo al obtener datos:", error.message);
+        estadoConexion.innerHTML = `❌ Error al cargar los datos: ${error.message}. Se inició con padrón vacío.`;
+        padronSocios = [];
+
+        Toastify({
+            text: `❌ Error de Sincronización: No se pudo conectar a la base de datos.`,
+            duration: 4000,
+            close: true,
+            gravity: "top", 
+            position: "right", 
+            style: {
+                background: "linear-gradient(to right, #e74c3c, #c0392b)"
+            }
+        }).showToast();
     } finally {
-       
         renderizarSocios(padronSocios);
     }
 }
-
-setTimeout(() => {
-    lanzarFeedback("📢 Recordatorio del día: Las cuotas vencen el día 10 de cada mes.","alerta");
-}, 4000);
 
 function guardarEnLocalStorage() {
     localStorage.setItem("padronSocios", JSON.stringify(padronSocios));
@@ -108,23 +123,16 @@ function renderizarSocios(listaDeSocios) {
     calcularIngresosTotales();
 }
 
-function lanzarFeedback(mensaje, tipoClase) {
-    notificacion.innerHTML = `
-        <span>${mensaje}</span>
-        <button id="btn-cerrar-alerta" style="width: auto; background: none; color: inherit; border: none; padding: 0 0 0 15px; cursor: pointer; font-weight: bold; float: right;">X</button>
-    `;
-    notificacion.className = `feedback ${tipoClase}`;
-
-    const btnCerrar = document.querySelector("#btn-cerrar-alerta");
-    btnCerrar.addEventListener("click", function() {
-        notificacion.className = "feedback oculto"; 
-    });
-}
-
 const btnRegistrar = document.querySelector("#btn-registrar");
 btnRegistrar.addEventListener("click", function() {
     if (inputNombre.value.trim() === "" || inputEdad.value === "" || inputCategoria.value === "" || inputCuota.value === "") {
-        lanzarFeedback("Por favor, completa todos los campos del formulario.", "alerta");
+        Toastify({
+            text: "⚠️ Por favor, completa todos los campos del formulario.",
+            duration: 3000,
+            gravity: "top",
+            position: "right",
+            style: { background: "#f39c12" }
+        }).showToast();
         return; 
     }
 
@@ -138,7 +146,13 @@ btnRegistrar.addEventListener("click", function() {
     padronSocios.push(nuevoSocio);
     guardarEnLocalStorage(); 
     
-    lanzarFeedback(`¡Socio ${nuevoSocio.nombre} registrado con éxito!`, "exito");
+    Toastify({
+        text: `✅ ¡Socio ${nuevoSocio.nombre} registrado con éxito!`,
+        duration: 3000,
+        gravity: "top",
+        position: "right",
+        style: { background: "linear-gradient(to right, #2ecc71, #27ae60)" }
+    }).showToast();
     
     inputNombre.value = "";
     inputEdad.value = "";
@@ -170,7 +184,15 @@ contenedorSocios.addEventListener("click", function(event) {
         if (socioAFectar) {
             socioAFectar.calcularCuotaConRecargo();
             guardarEnLocalStorage(); 
-            lanzarFeedback(`Se aplicó 10% de recargo por mora a ${socioAFectar.nombre}`, "alerta");
+            
+            Toastify({
+                text: `📈 Recargo del 10% aplicado a ${socioAFectar.nombre}`,
+                duration: 2500,
+                gravity: "bottom",
+                position: "left",
+                style: { background: "#34495e" }
+            }).showToast();
+            
             aplicarFiltroActual();
         }
     }
@@ -181,11 +203,43 @@ contenedorSocios.addEventListener("click", function(event) {
         
         if (indexOriginal !== -1) {
             const socioBaja = padronSocios[indexOriginal];
-            padronSocios.splice(indexOriginal, 1); 
-            guardarEnLocalStorage(); 
-            lanzarFeedback(`Socio ${socioBaja.nombre} dado de baja de la institución`, "alerta");
-            aplicarFiltroActual(); 
+            
+            const confirmar = confirm(`¿Estás seguro de que quieres dar de baja a ${socioBaja.nombre}?`);
+            if (confirmar) {
+                padronSocios.splice(indexOriginal, 1); 
+                guardarEnLocalStorage(); 
+                
+                Toastify({
+                    text: `🗑️ Socio ${socioBaja.nombre} dado de baja.`,
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    style: { background: "#e74c3c" }
+                }).showToast();
+
+                aplicarFiltroActual(); 
+            }
         }
+    }
+});
+
+const btnVaciar = document.querySelector("#btn-vaciar");
+btnVaciar.addEventListener("click", function() {
+    const confirmar = confirm("¿Estás seguro de que deseas eliminar TODOS los socios del padrón?");
+    
+    if (confirmar) {
+        padronSocios = [];
+        localStorage.removeItem("padronSocios");
+        filtroCategoria.value = "Todos";
+        renderizarSocios(padronSocios);
+
+        Toastify({
+            text: "💥 El padrón de socios ha sido vaciado por completo.",
+            duration: 4000,
+            gravity: "top",
+            position: "center",
+            style: { background: "linear-gradient(to right, #d35400, #c0392b)" }
+        }).showToast();
     }
 });
 
